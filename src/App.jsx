@@ -1,14 +1,20 @@
 import { useState } from "react";
+import DNS from "./DNS.jsx";
+
+const NAV = [
+  { id: "services", label: "01 · Services", subtitle: "Зачем нужен Service" },
+  { id: "dns",      label: "02 · DNS",      subtitle: "Service Discovery" },
+];
 
 const pods = {
   frontend: [
-    { id: "fe-1", label: "frontend-pod-1", ip: "10.0.1.11" },
-    { id: "fe-2", label: "frontend-pod-2", ip: "10.0.1.12" },
-    { id: "fe-3", label: "frontend-pod-3", ip: "10.0.1.13" },
+    { id: "fe-1", ip: "10.0.1.11" },
+    { id: "fe-2", ip: "10.0.1.12" },
+    { id: "fe-3", ip: "10.0.1.13" },
   ],
   backend: [
-    { id: "be-1", label: "backend-pod-1", ip: "10.0.2.21" },
-    { id: "be-2", label: "backend-pod-2", ip: "10.0.2.22" },
+    { id: "be-1", ip: "10.0.2.21" },
+    { id: "be-2", ip: "10.0.2.22" },
   ],
 };
 
@@ -67,79 +73,31 @@ const Arrow = ({ label, color = "#0ea5e9", dashed = false }) => (
   </div>
 );
 
-const steps = [
-  {
-    title: "Проблема 1: нестабильные IP",
-    subtitle: "Под упал → перезапустился → получил новый IP. Конфиг сломан.",
-    deadPod: "fe-2",
-    showServices: false,
-    arrowColor: "#ef4444",
-    arrowLabel: "hard-coded IP?",
-  },
-  {
-    title: "Проблема 2: балансировка нагрузки",
-    subtitle: "Три пода фронтенда — на какой из них слать запросы?",
-    deadPod: null,
-    showServices: false,
-    arrowColor: "#eab308",
-    arrowLabel: "load balance?",
-  },
-  {
-    title: "Решение: Kubernetes Service",
-    subtitle: "Стабильный виртуальный IP + балансировка трафика по всем подам.",
-    deadPod: null,
-    showServices: true,
-    arrowColor: "#0ea5e9",
-    arrowLabel: null,
-  },
+const svcSteps = [
+  { title: "Проблема 1: нестабильные IP", subtitle: "Под упал → перезапустился → получил новый IP. Конфиг сломан.", deadPod: "fe-2", showServices: false, arrowColor: "#ef4444", arrowLabel: "hard-coded IP?" },
+  { title: "Проблема 2: балансировка нагрузки", subtitle: "Три пода фронтенда — на какой из них слать запросы?", deadPod: null, showServices: false, arrowColor: "#eab308", arrowLabel: "load balance?" },
+  { title: "Решение: Kubernetes Service", subtitle: "Стабильный виртуальный IP + балансировка трафика по всем подам.", deadPod: null, showServices: true, arrowColor: "#0ea5e9", arrowLabel: null },
 ];
 
-export default function App() {
+function ServicesPage() {
   const [step, setStep] = useState(0);
-  const current = steps[step];
-
+  const current = svcSteps[step];
   return (
-    <div style={{
-      minHeight: "100vh", background: "#080c14",
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      fontFamily: "'JetBrains Mono', 'Fira Code', monospace", padding: 32, gap: 24,
-    }}>
-      {/* Header */}
+    <div style={{ minHeight: "100vh", background: "#080c14", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "monospace", padding: 32, gap: 24 }}>
       <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <div style={{ fontSize: 11, color: "#38bdf8", letterSpacing: 3, marginBottom: 6 }}>
-          KUBERNETES • СЕТЕВАЯ ПОДСИСТЕМА
-        </div>
+        <div style={{ fontSize: 11, color: "#38bdf8", letterSpacing: 3, marginBottom: 6 }}>KUBERNETES • СЕТЕВАЯ ПОДСИСТЕМА</div>
         <div style={{ fontSize: 24, color: "#f1f5f9", fontWeight: 700 }}>{current.title}</div>
         <div style={{ fontSize: 12, color: "#64748b", marginTop: 8 }}>{current.subtitle}</div>
       </div>
-
-      {/* Diagram */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 0,
-        background: "#0d1117", border: "1px solid #1e293b",
-        borderRadius: 20, padding: "32px 40px",
-      }}>
-        {/* Frontend pods */}
+      <div style={{ display: "flex", alignItems: "center", background: "#0d1117", border: "1px solid #1e293b", borderRadius: 20, padding: "32px 40px" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 10, color: "#64748b", letterSpacing: 2 }}>FRONTEND</span>
           <div style={{ display: "flex", gap: 16 }}>
-            {pods.frontend.map((p) => (
-              <PodIcon key={p.id} ip={p.ip} highlight={current.showServices} dead={current.deadPod === p.id} />
-            ))}
+            {pods.frontend.map(p => <PodIcon key={p.id} ip={p.ip} highlight={current.showServices} dead={current.deadPod === p.id} />)}
           </div>
-          {step === 0 && (
-            <div style={{ marginTop: 6, background: "#2d1515", border: "1px solid #ef4444", borderRadius: 8, padding: "4px 12px", fontSize: 9, color: "#ef4444" }}>
-              ⚠ IP изменился после рестарта
-            </div>
-          )}
-          {step === 1 && (
-            <div style={{ marginTop: 6, background: "#1a1a00", border: "1px solid #eab308", borderRadius: 8, padding: "4px 12px", fontSize: 9, color: "#eab308" }}>
-              ? на какой под слать запрос?
-            </div>
-          )}
+          {step === 0 && <div style={{ marginTop: 6, background: "#2d1515", border: "1px solid #ef4444", borderRadius: 8, padding: "4px 12px", fontSize: 9, color: "#ef4444" }}>⚠ IP изменился после рестарта</div>}
+          {step === 1 && <div style={{ marginTop: 6, background: "#1a1a00", border: "1px solid #eab308", borderRadius: 8, padding: "4px 12px", fontSize: 9, color: "#eab308" }}>? на какой под слать запрос?</div>}
         </div>
-
-        {/* Middle section */}
         {current.showServices ? (
           <>
             <div style={{ margin: "0 8px" }}><Arrow color="#0ea5e9" /></div>
@@ -147,22 +105,14 @@ export default function App() {
             <div style={{ margin: "0 8px" }}><Arrow color="#0ea5e9" label="балансировка" /></div>
           </>
         ) : (
-          <div style={{ margin: "0 16px" }}>
-            <Arrow color={current.arrowColor} dashed label={current.arrowLabel} />
-          </div>
+          <div style={{ margin: "0 16px" }}><Arrow color={current.arrowColor} dashed label={current.arrowLabel} /></div>
         )}
-
-        {/* Backend pods */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 10, color: "#64748b", letterSpacing: 2 }}>BACKEND</span>
           <div style={{ display: "flex", gap: 16 }}>
-            {pods.backend.map((p) => (
-              <PodIcon key={p.id} ip={p.ip} highlight={current.showServices} dead={false} />
-            ))}
+            {pods.backend.map(p => <PodIcon key={p.id} ip={p.ip} highlight={current.showServices} dead={false} />)}
           </div>
         </div>
-
-        {/* Backend service */}
         {current.showServices && (
           <>
             <div style={{ margin: "0 8px" }}><Arrow color="#0ea5e9" /></div>
@@ -171,14 +121,8 @@ export default function App() {
           </>
         )}
       </div>
-
-      {/* DNS hint */}
       {current.showServices && (
-        <div style={{
-          background: "#0a1628", border: "1px dashed #6366f1", borderRadius: 12,
-          padding: "10px 24px", display: "flex", gap: 12, alignItems: "center",
-          animation: "fadeIn 0.5s ease",
-        }}>
+        <div style={{ background: "#0a1628", border: "1px dashed #6366f1", borderRadius: 12, padding: "10px 24px", display: "flex", gap: 12, alignItems: "center" }}>
           <span style={{ fontSize: 18 }}>🔍</span>
           <span style={{ fontSize: 11, color: "#a5b4fc" }}>
             А ещё хорошо бы обращаться по имени:{" "}
@@ -187,35 +131,45 @@ export default function App() {
           </span>
         </div>
       )}
-
-      {/* Navigation */}
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8 }}>
-        <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} style={{
-          padding: "8px 20px", borderRadius: 8, border: "1px solid #334155",
-          background: step === 0 ? "#0d1117" : "#1e293b",
-          color: step === 0 ? "#475569" : "#e2e8f0",
-          cursor: step === 0 ? "default" : "pointer", fontSize: 12,
-        }}>← Назад</button>
-
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} style={{ padding: "8px 20px", borderRadius: 8, border: "1px solid #334155", background: step === 0 ? "#0d1117" : "#1e293b", color: step === 0 ? "#475569" : "#e2e8f0", cursor: step === 0 ? "default" : "pointer", fontSize: 12 }}>← Назад</button>
         <div style={{ display: "flex", gap: 6 }}>
-          {steps.map((_, i) => (
-            <div key={i} onClick={() => setStep(i)} style={{
-              width: i === step ? 20 : 8, height: 8, borderRadius: 4,
-              background: i === step ? "#0ea5e9" : "#1e293b",
-              transition: "all 0.3s", cursor: "pointer",
-            }} />
-          ))}
+          {svcSteps.map((_, i) => <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? 20 : 8, height: 8, borderRadius: 4, background: i === step ? "#0ea5e9" : "#1e293b", transition: "all 0.3s", cursor: "pointer" }} />)}
         </div>
-
-        <button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} disabled={step === steps.length - 1} style={{
-          padding: "8px 20px", borderRadius: 8, border: "1px solid #334155",
-          background: step === steps.length - 1 ? "#0d1117" : "#1e293b",
-          color: step === steps.length - 1 ? "#475569" : "#e2e8f0",
-          cursor: step === steps.length - 1 ? "default" : "pointer", fontSize: 12,
-        }}>Вперёд →</button>
+        <button onClick={() => setStep(s => Math.min(svcSteps.length - 1, s + 1))} disabled={step === svcSteps.length - 1} style={{ padding: "8px 20px", borderRadius: 8, border: "1px solid #334155", background: step === svcSteps.length - 1 ? "#0d1117" : "#1e293b", color: step === svcSteps.length - 1 ? "#475569" : "#e2e8f0", cursor: step === svcSteps.length - 1 ? "default" : "pointer", fontSize: 12 }}>Вперёд →</button>
       </div>
+    </div>
+  );
+}
 
-      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }`}</style>
+export default function App() {
+  const [page, setPage] = useState("services");
+  return (
+    <div style={{ minHeight: "100vh", background: "#080c14", fontFamily: "monospace" }}>
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: "#0d1117ee", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #1e293b",
+        display: "flex", alignItems: "center", gap: 0, padding: "0 24px", height: 48,
+      }}>
+        <span style={{ fontSize: 11, color: "#38bdf8", letterSpacing: 2, marginRight: 24 }}>K8S LECTURES</span>
+        {NAV.map(n => (
+          <button key={n.id} onClick={() => setPage(n.id)} style={{
+            padding: "0 18px", height: 48, border: "none",
+            borderBottom: page === n.id ? "2px solid #0ea5e9" : "2px solid transparent",
+            background: "transparent",
+            color: page === n.id ? "#e2e8f0" : "#64748b",
+            cursor: "pointer", fontSize: 11, fontFamily: "monospace",
+            transition: "all 0.2s",
+          }}>
+            {n.label}
+          </button>
+        ))}
+      </nav>
+      <div style={{ paddingTop: 48 }}>
+        {page === "services" && <ServicesPage />}
+        {page === "dns"      && <DNS />}
+      </div>
     </div>
   );
 }
