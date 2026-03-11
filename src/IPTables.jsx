@@ -116,28 +116,34 @@ const KubeProxy = ({ highlight, dim }) => (
   </div>
 );
 
-const IPTablesBox = ({ highlight, node }) => (
-  <div style={{
-    background: highlight ? "linear-gradient(135deg,#2d1515,#4a1515)" : "linear-gradient(135deg,#1a0f0f,#2d1515)",
-    border: `2px solid ${highlight ? "#f87171" : "#7f1d1d"}`,
-    borderRadius: 10, padding: "10px 14px",
-    display: "flex", flexDirection: "column", gap: 4,
-    boxShadow: highlight ? "0 0 20px #f8717140" : "none",
-    transition: "all 0.4s", minWidth: 180,
-  }}>
-    <span style={{ fontSize: 9, color: "#f87171", fontFamily: "monospace", letterSpacing: 1 }}>iptables · {node}</span>
-    {highlight && (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
-        {["DNAT → 10.42.0.98:80 (33%)", "DNAT → 10.42.0.99:80 (33%)", "DNAT → 10.42.1.97:80 (33%)"].map((r, i) => (
-          <div key={i} style={{ fontSize: 8, color: "#fca5a5", fontFamily: "monospace", background: "#3f0f0f", borderRadius: 4, padding: "2px 6px" }}>{r}</div>
-        ))}
-      </div>
-    )}
-    {!highlight && (
-      <span style={{ fontSize: 9, color: "#7f1d1d", fontFamily: "monospace" }}>NAT rules</span>
-    )}
-  </div>
-);
+const IPTablesBox = ({ highlight, node, isNode2 }) => {
+  const node1Rules = ["DNAT → 10.42.0.98:80 (33%)", "DNAT → 10.42.0.99:80 (33%)", "DNAT → 10.42.1.97:80 (33%)"];
+  const node2Rules = ["принять пакет dst: 10.42.1.97:80", "SNAT: src → ClusterIP на обратном пути"];
+  const rules = isNode2 ? node2Rules : node1Rules;
+  const ruleColor = isNode2 ? "#86efac" : "#fca5a5";
+  const ruleBg    = isNode2 ? "#0a2a0a" : "#3f0f0f";
+
+  return (
+    <div style={{
+      background: highlight ? (isNode2 ? "linear-gradient(135deg,#0d2a0d,#143a14)" : "linear-gradient(135deg,#2d1515,#4a1515)") : "linear-gradient(135deg,#1a0f0f,#2d1515)",
+      border: `2px solid ${highlight ? (isNode2 ? "#22c55e" : "#f87171") : "#7f1d1d"}`,
+      borderRadius: 10, padding: "10px 14px",
+      display: "flex", flexDirection: "column", gap: 4,
+      boxShadow: highlight ? `0 0 20px ${isNode2 ? "#22c55e40" : "#f8717140"}` : "none",
+      transition: "all 0.4s", minWidth: 180,
+    }}>
+      <span style={{ fontSize: 9, color: highlight ? (isNode2 ? "#22c55e" : "#f87171") : "#7f1d1d", fontFamily: "monospace", letterSpacing: 1 }}>iptables · {node}</span>
+      {highlight && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
+          {rules.map((r, i) => (
+            <div key={i} style={{ fontSize: 8, color: ruleColor, fontFamily: "monospace", background: ruleBg, borderRadius: 4, padding: "2px 6px" }}>{r}</div>
+          ))}
+        </div>
+      )}
+      {!highlight && <span style={{ fontSize: 9, color: "#7f1d1d", fontFamily: "monospace" }}>NAT rules</span>}
+    </div>
+  );
+};
 
 const HArrow = ({ active, color, label, reverse, width = 60 }) => (
   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
@@ -170,7 +176,7 @@ const annotations = {
   request: "client-pod знает только DNS-имя nginx-service. После резолвинга получает ClusterIP 10.43.234.158. Пакет с этим destination попадает в iptables на worker-node-01.",
   nat: "iptables перехватывает пакет к 10.43.234.158:80 и делает DNAT — подменяет destination IP на реальный IP пода 10.42.1.97. ClusterIP нигде физически не существует, это виртуальный адрес.",
   overlay: "Overlay network знает где живёт каждый под. Пакет инкапсулируется и доставляется на worker-node-02, где живёт pod 10.42.1.97.",
-  deliver: "На worker-node-02 iptables видит трафик уже к реальному IP пода и доставляет его. Ответный трафик идёт обратно — SNAT восстанавливает оригинальный ClusterIP в ответе.",
+  deliver: "Пакет пришёл с dst: 10.42.1.97:80 — iptables на worker-node-02 просто пропускает его к поду. На обратном пути под отвечает с src: 10.42.1.97, но клиент ожидает ответ от ClusterIP 10.43.234.158. SNAT подменяет обратный адрес — клиент видит ответ от сервиса, а не от конкретного пода.",
 };
 
 export default function IPTables() {
@@ -220,7 +226,7 @@ export default function IPTables() {
             <VArrow active={flow === "iptables"} color="#f87171" label="rules" height={16} />
           </div>
 
-          <IPTablesBox highlight={ipt1Active} node="worker-node-01" />
+          <IPTablesBox highlight={ipt1Active} node="worker-node-01" isNode2={false} />
 
           {/* client pod + nginx pods on node1 */}
           <div style={{ display: "flex", gap: 14, justifyContent: "center" }}>
@@ -273,7 +279,7 @@ export default function IPTables() {
             <VArrow active={flow === "iptables"} color="#f87171" label="rules" height={16} />
           </div>
 
-          <IPTablesBox highlight={ipt2Active} node="worker-node-02" />
+          <IPTablesBox highlight={ipt2Active} node="worker-node-02" isNode2={true} />
 
           <div style={{ display: "flex", justifyContent: "center" }}>
             <Pod name="nginx-pod" ip="10.42.1.97" highlight={pod97Active} dim={flow === "request"} />
