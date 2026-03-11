@@ -2,12 +2,14 @@ import { useState } from "react";
 import DNS from "./DNS.jsx";
 import ClusterIP from "./ClusterIP.jsx";
 import IPTables from "./IPTables.jsx";
+import ServiceTypes from "./ServiceTypes.jsx";
 
 const NAV = [
   { id: "services", label: "01 · Services" },
   { id: "dns",      label: "02 · DNS" },
   { id: "clusterip",label: "03 · ClusterIP" },
   { id: "iptables", label: "04 · iptables" },
+  { id: "servicetypes", label: "05 · Service Types" },
 ];
 
 const PodIcon = ({ ip, highlight, dead }) => (
@@ -122,6 +124,7 @@ export default function App() {
         {page === "dns"       && <DNS />}
         {page === "clusterip" && <ClusterIP />}
         {page === "iptables"  && <IPTables />}
+        {page === "servicetypes" && <ServiceTypes />}
       </div>
     </div>
   );
