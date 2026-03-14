@@ -4,14 +4,16 @@ import ClusterIP from "./ClusterIP.jsx";
 import IPTables from "./IPTables.jsx";
 import ServiceTypes from "./ServiceTypes.jsx";
 import Ingress from "./Ingress.jsx";
+import Volumes from "./Volumes.jsx";
 
 const NAV = [
-  { id: "services", label: "01 · Services" },
-  { id: "dns",      label: "02 · DNS" },
-  { id: "clusterip",label: "03 · ClusterIP" },
-  { id: "iptables", label: "04 · iptables" },
+  { id: "services",     label: "01 · Services" },
+  { id: "dns",          label: "02 · DNS" },
+  { id: "clusterip",    label: "03 · ClusterIP" },
+  { id: "iptables",     label: "04 · iptables" },
   { id: "servicetypes", label: "05 · Service Types" },
-  { id: "ingress", label: "06 · Ingress" },
+  { id: "ingress",      label: "06 · Ingress" },
+  { id: "volumes",      label: "07 · Volumes" },
 ];
 
 const PodIcon = ({ ip, highlight, dead }) => (
@@ -122,12 +124,13 @@ export default function App() {
         ))}
       </nav>
       <div style={{ paddingTop: 48 }}>
-        {page === "services"  && <ServicesPage />}
-        {page === "dns"       && <DNS />}
-        {page === "clusterip" && <ClusterIP />}
-        {page === "iptables"  && <IPTables />}
+        {page === "services"     && <ServicesPage />}
+        {page === "dns"          && <DNS />}
+        {page === "clusterip"    && <ClusterIP />}
+        {page === "iptables"     && <IPTables />}
         {page === "servicetypes" && <ServiceTypes />}
-        {page === "ingress" && <Ingress />}
+        {page === "ingress"      && <Ingress />}
+        {page === "volumes"      && <Volumes />}
       </div>
     </div>
   );
