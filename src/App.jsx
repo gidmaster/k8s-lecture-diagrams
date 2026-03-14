@@ -6,15 +6,7 @@ import ServiceTypes from "./ServiceTypes.jsx";
 import Ingress from "./Ingress.jsx";
 import Volumes from "./Volumes.jsx";
 
-const NAV = [
-  { id: "services",     label: "01 · Services" },
-  { id: "dns",          label: "02 · DNS" },
-  { id: "clusterip",    label: "03 · ClusterIP" },
-  { id: "iptables",     label: "04 · iptables" },
-  { id: "servicetypes", label: "05 · Service Types" },
-  { id: "ingress",      label: "06 · Ingress" },
-  { id: "volumes",      label: "07 · Volumes" },
-];
+// ── Services page ─────────────────────────────────────────────────────────────
 
 const PodIcon = ({ ip, highlight, dead }) => (
   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: dead ? 0.35 : 1, transition: "opacity 0.4s" }}>
@@ -25,7 +17,8 @@ const PodIcon = ({ ip, highlight, dead }) => (
       display: "flex", alignItems: "center", justifyContent: "center",
       boxShadow: highlight && !dead ? "0 0 16px #6366f180" : "none", transition: "all 0.4s",
     }}>
-      {dead ? <span style={{ color: "#ef4444", fontSize: 22, fontWeight: 700 }}>✕</span>
+      {dead
+        ? <span style={{ color: "#ef4444", fontSize: 22, fontWeight: 700 }}>✕</span>
         : <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
             <rect x="4" y="8" width="24" height="16" rx="4" fill={highlight ? "#bfdbfe" : "#94a3b8"} />
             <rect x="8" y="12" width="6" height="4" rx="1" fill={highlight ? "#3b82f6" : "#475569"} />
@@ -86,11 +79,10 @@ function ServicesPage() {
           <span style={{ fontSize: 9, color: "#64748b", letterSpacing: 2 }}>FRONTEND</span>
           <div style={{ display: "flex", gap: 14 }}>{fePods.map(p => <PodIcon key={p.id} ip={p.ip} highlight={cur.showService} />)}</div>
         </div>
-        {cur.showService ? (
-          <><div style={{ margin: "0 10px" }}><Arrow color="#0ea5e9" label="запрос" /></div><SvcBox label="backend-svc" ip="10.96.20.20 (stable)" highlight /><div style={{ margin: "0 10px" }}><Arrow color="#0ea5e9" label="балансировка" /></div></>
-        ) : (
-          <div style={{ margin: "0 18px" }}><Arrow color={cur.arrowColor} dashed label={cur.arrowLabel} /></div>
-        )}
+        {cur.showService
+          ? <><div style={{ margin: "0 10px" }}><Arrow color="#0ea5e9" label="запрос" /></div><SvcBox label="backend-svc" ip="10.96.20.20 (stable)" highlight /><div style={{ margin: "0 10px" }}><Arrow color="#0ea5e9" label="балансировка" /></div></>
+          : <div style={{ margin: "0 18px" }}><Arrow color={cur.arrowColor} dashed label={cur.arrowLabel} /></div>
+        }
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 9, color: "#64748b", letterSpacing: 2 }}>BACKEND</span>
           <div style={{ display: "flex", gap: 14 }}>{bePods.map(p => <PodIcon key={p.id} ip={p.ip} highlight={cur.showService} dead={cur.deadBackendPod === p.id} />)}</div>
@@ -108,29 +100,110 @@ function ServicesPage() {
         <div style={{ display: "flex", gap: 6 }}>{svcSteps.map((_, i) => <div key={i} onClick={() => setStep(i)} style={{ width: i === step ? 20 : 8, height: 8, borderRadius: 4, background: i === step ? "#0ea5e9" : "#1e293b", transition: "all 0.3s", cursor: "pointer" }} />)}</div>
         <button onClick={() => setStep(s => Math.min(svcSteps.length - 1, s + 1))} disabled={step === svcSteps.length - 1} style={{ padding: "8px 20px", borderRadius: 8, border: "1px solid #334155", background: step === svcSteps.length - 1 ? "#0d1117" : "#1e293b", color: step === svcSteps.length - 1 ? "#475569" : "#e2e8f0", cursor: step === svcSteps.length - 1 ? "default" : "pointer", fontSize: 12 }}>Вперёд →</button>
       </div>
-      <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }`}</style>
+      <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
     </div>
   );
 }
 
+// ── Навигационная структура ───────────────────────────────────────────────────
+//
+// Компоненты инстанциируются внутри App чтобы React не пересоздавал их
+// при смене вкладки. Если вынести JSX в константу на верхнем уровне —
+// они потеряют локальный state при переключении лекций.
+
+const LECTURES = [
+  {
+    id: "networking",
+    label: "Сетевая подсистема",
+    diagrams: [
+      { id: "services",     label: "01 · Services"     },
+      { id: "dns",          label: "02 · DNS"           },
+      { id: "clusterip",    label: "03 · ClusterIP"     },
+      { id: "iptables",     label: "04 · iptables"      },
+      { id: "servicetypes", label: "05 · Service Types" },
+      { id: "ingress",      label: "06 · Ingress"       },
+    ],
+  },
+  {
+    id: "storage",
+    label: "Хранение данных",
+    diagrams: [
+      { id: "volumes",      label: "07 · Volumes"       },
+    ],
+  },
+];
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
 export default function App() {
-  const [page, setPage] = useState("services");
+  const [activeLecture, setActiveLecture] = useState("networking");
+  const [activeDiagram, setActiveDiagram] = useState("services");
+
+  const currentLecture = LECTURES.find(l => l.id === activeLecture);
+
+  const handleLectureChange = (lectureId) => {
+    const lecture = LECTURES.find(l => l.id === lectureId);
+    setActiveLecture(lectureId);
+    setActiveDiagram(lecture.diagrams[0].id);
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#080c14", fontFamily: "monospace" }}>
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "#0d1117ee", backdropFilter: "blur(12px)", borderBottom: "1px solid #1e293b", display: "flex", alignItems: "center", padding: "0 24px", height: 48 }}>
-        <span style={{ fontSize: 11, color: "#38bdf8", letterSpacing: 2, marginRight: 24 }}>K8S LECTURES</span>
-        {NAV.map(n => (
-          <button key={n.id} onClick={() => setPage(n.id)} style={{ padding: "0 18px", height: 48, border: "none", borderBottom: page === n.id ? "2px solid #0ea5e9" : "2px solid transparent", background: "transparent", color: page === n.id ? "#e2e8f0" : "#64748b", cursor: "pointer", fontSize: 11, fontFamily: "monospace", transition: "all 0.2s" }}>{n.label}</button>
-        ))}
+
+      {/* ── Navbar ── */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: "#0d1117ee", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #1e293b",
+        display: "flex", flexDirection: "column",
+      }}>
+        {/* Верхняя строка — лекции */}
+        <div style={{ display: "flex", alignItems: "center", padding: "0 24px", height: 40, borderBottom: "1px solid #0f1923" }}>
+          <span style={{ fontSize: 11, color: "#38bdf8", letterSpacing: 2, marginRight: 24, whiteSpace: "nowrap" }}>
+            K8S LECTURES
+          </span>
+          {LECTURES.map(l => (
+            <button key={l.id} onClick={() => handleLectureChange(l.id)} style={{
+              padding: "0 16px", height: 40, border: "none",
+              borderBottom: activeLecture === l.id ? "2px solid #38bdf8" : "2px solid transparent",
+              background: "transparent",
+              color: activeLecture === l.id ? "#f1f5f9" : "#475569",
+              cursor: "pointer", fontSize: 11, fontFamily: "monospace",
+              transition: "all 0.2s", whiteSpace: "nowrap",
+            }}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Нижняя строка — диаграммы текущей лекции */}
+        <div style={{ display: "flex", alignItems: "center", padding: "0 24px", height: 34 }}>
+          {currentLecture?.diagrams.map(d => (
+            <button key={d.id} onClick={() => setActiveDiagram(d.id)} style={{
+              padding: "0 16px", height: 34, border: "none",
+              borderBottom: activeDiagram === d.id ? "2px solid #0ea5e9" : "2px solid transparent",
+              background: "transparent",
+              color: activeDiagram === d.id ? "#e2e8f0" : "#64748b",
+              cursor: "pointer", fontSize: 10, fontFamily: "monospace",
+              transition: "all 0.2s", whiteSpace: "nowrap",
+            }}>
+              {d.label}
+            </button>
+          ))}
+        </div>
       </nav>
-      <div style={{ paddingTop: 48 }}>
-        {page === "services"     && <ServicesPage />}
-        {page === "dns"          && <DNS />}
-        {page === "clusterip"    && <ClusterIP />}
-        {page === "iptables"     && <IPTables />}
-        {page === "servicetypes" && <ServiceTypes />}
-        {page === "ingress"      && <Ingress />}
-        {page === "volumes"      && <Volumes />}
+
+      {/* ── Контент ── */}
+      <div style={{ paddingTop: 74 }}>
+        {/* Networking */}
+        {activeDiagram === "services"     && <ServicesPage />}
+        {activeDiagram === "dns"          && <DNS />}
+        {activeDiagram === "clusterip"    && <ClusterIP />}
+        {activeDiagram === "iptables"     && <IPTables />}
+        {activeDiagram === "servicetypes" && <ServiceTypes />}
+        {activeDiagram === "ingress"      && <Ingress />}
+        {/* Storage */}
+        {activeDiagram === "volumes"      && <Volumes />}
       </div>
     </div>
   );
