@@ -5,6 +5,7 @@ import IPTables from "./IPTables.jsx";
 import ServiceTypes from "./ServiceTypes.jsx";
 import Ingress from "./Ingress.jsx";
 import Volumes from "./Volumes.jsx";
+import VolumeInternals from "./VolumeInternals.jsx";
 
 // ── Services page ─────────────────────────────────────────────────────────────
 
@@ -128,7 +129,8 @@ const LECTURES = [
     id: "storage",
     label: "Хранение данных",
     diagrams: [
-      { id: "volumes",      label: "07 · Volumes"       },
+      { id: "volumes",        label: "07 · Volumes"          },
+      { id: "volumeinternals", label: "08 · Под капотом"    },
     ],
   },
 ];
@@ -203,7 +205,8 @@ export default function App() {
         {activeDiagram === "servicetypes" && <ServiceTypes />}
         {activeDiagram === "ingress"      && <Ingress />}
         {/* Storage */}
-        {activeDiagram === "volumes"      && <Volumes />}
+        {activeDiagram === "volumes"         && <Volumes />}
+        {activeDiagram === "volumeinternals"  && <VolumeInternals />}
       </div>
     </div>
   );
