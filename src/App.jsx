@@ -8,6 +8,7 @@ import Volumes from "./Volumes.jsx";
 import VolumeInternals from "./VolumeInternals.jsx";
 import PVLifecycle from "./PVLifecycle.jsx";
 import PVProvisioning from "./PVProvisioning.jsx";
+import StatefulSetDiagram from "./StatefulSetDiagram.jsx";
 
 // ── Services page ─────────────────────────────────────────────────────────────
 
@@ -134,7 +135,8 @@ const LECTURES = [
       { id: "volumes",        label: "07 · Volumes"          },
       { id: "volumeinternals", label: "08 · Под капотом"    },
       { id: "pvlifecycle",     label: "09 · PV Lifecycle"      },
-      { id: "pvprovisioning",  label: "10 · PV Provisioning"   },
+      { id: "pvprovisioning",   label: "10 · PV Provisioning"  },
+      { id: "statefulset",      label: "11 · StatefulSet"       },
     ],
   },
 ];
@@ -213,6 +215,7 @@ export default function App() {
         {activeDiagram === "volumeinternals"  && <VolumeInternals />}
         {activeDiagram === "pvlifecycle"      && <PVLifecycle />}
         {activeDiagram === "pvprovisioning"   && <PVProvisioning />}
+        {activeDiagram === "statefulset"      && <StatefulSetDiagram />}
       </div>
     </div>
   );
