@@ -7,6 +7,7 @@ import Ingress from "./Ingress.jsx";
 import Volumes from "./Volumes.jsx";
 import VolumeInternals from "./VolumeInternals.jsx";
 import PVLifecycle from "./PVLifecycle.jsx";
+import PVProvisioning from "./PVProvisioning.jsx";
 
 // ── Services page ─────────────────────────────────────────────────────────────
 
@@ -132,7 +133,8 @@ const LECTURES = [
     diagrams: [
       { id: "volumes",        label: "07 · Volumes"          },
       { id: "volumeinternals", label: "08 · Под капотом"    },
-      { id: "pvlifecycle",     label: "09 · PV Lifecycle"   },
+      { id: "pvlifecycle",     label: "09 · PV Lifecycle"      },
+      { id: "pvprovisioning",  label: "10 · PV Provisioning"   },
     ],
   },
 ];
@@ -210,6 +212,7 @@ export default function App() {
         {activeDiagram === "volumes"         && <Volumes />}
         {activeDiagram === "volumeinternals"  && <VolumeInternals />}
         {activeDiagram === "pvlifecycle"      && <PVLifecycle />}
+        {activeDiagram === "pvprovisioning"   && <PVProvisioning />}
       </div>
     </div>
   );
