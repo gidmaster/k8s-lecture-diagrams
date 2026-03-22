@@ -9,6 +9,10 @@ import VolumeInternals from "./VolumeInternals.jsx";
 import PVLifecycle from "./PVLifecycle.jsx";
 import PVProvisioning from "./PVProvisioning.jsx";
 import StatefulSetDiagram from "./StatefulSetDiagram.jsx";
+import ControlPlane from "./ControlPlane.jsx";
+import Reconciliation from "./Reconciliation.jsx";
+import CRD from "./CRD.jsx";
+import KopfOperator from "./KopfOperator.jsx";
 
 // ── Services page ─────────────────────────────────────────────────────────────
 
@@ -110,10 +114,6 @@ function ServicesPage() {
 }
 
 // ── Навигационная структура ───────────────────────────────────────────────────
-//
-// Компоненты инстанциируются внутри App чтобы React не пересоздавал их
-// при смене вкладки. Если вынести JSX в константу на верхнем уровне —
-// они потеряют локальный state при переключении лекций.
 
 const LECTURES = [
   {
@@ -132,11 +132,21 @@ const LECTURES = [
     id: "storage",
     label: "Хранение данных",
     diagrams: [
-      { id: "volumes",        label: "07 · Volumes"          },
-      { id: "volumeinternals", label: "08 · Под капотом"    },
-      { id: "pvlifecycle",     label: "09 · PV Lifecycle"      },
-      { id: "pvprovisioning",   label: "10 · PV Provisioning"  },
-      { id: "statefulset",      label: "11 · StatefulSet"       },
+      { id: "volumes",         label: "07 · Volumes"         },
+      { id: "volumeinternals", label: "08 · Под капотом"     },
+      { id: "pvlifecycle",     label: "09 · PV Lifecycle"    },
+      { id: "pvprovisioning",  label: "10 · PV Provisioning" },
+      { id: "statefulset",     label: "11 · StatefulSet"     },
+    ],
+  },
+  {
+    id: "operators",
+    label: "CRD & Operators",
+    diagrams: [
+      { id: "controlplane",    label: "12 · Control Plane"      },
+      { id: "reconciliation",  label: "13 · Reconcile Loop"     },
+      { id: "crd",             label: "14 · CRD & CR"           },
+      { id: "kopfoperator",    label: "15 · Kopf Operator"      },
     ],
   },
 ];
@@ -216,6 +226,11 @@ export default function App() {
         {activeDiagram === "pvlifecycle"      && <PVLifecycle />}
         {activeDiagram === "pvprovisioning"   && <PVProvisioning />}
         {activeDiagram === "statefulset"      && <StatefulSetDiagram />}
+        {/* CRD & Operators */}
+        {activeDiagram === "controlplane"   && <ControlPlane />}
+        {activeDiagram === "reconciliation" && <Reconciliation />}
+        {activeDiagram === "crd"            && <CRD />}
+        {activeDiagram === "kopfoperator"   && <KopfOperator />}
       </div>
     </div>
   );
